@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>小马宝莉魔法计时器 | 彩虹小马风格</title>
+    <style>
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f9e6f0 0%, #ffe6f0 30%, #e0d3ff 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Neue', 'Comic Neue', 'Segoe UI Emoji', 'Chalkboard SE', 'Comic Sans MS', 'cursive', sans-serif;
+            margin: 0;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 梦幻云彩背景装饰 */
+        body::before {
+            content: "🦄✨🌈☁️";
+            font-size: 120px;
+            position: absolute;
+            bottom: 10px;
+            left: -30px;
+            opacity: 0.2;
+            pointer-events: none;
+            white-space: pre;
+            transform: rotate(-10deg);
+        }
+        
+        body::after {
+            content: "⭐🌟💖";
+            font-size: 90px;
+            position: absolute;
+            top: 20px;
+            right: -20px;
+            opacity: 0.2;
+            pointer-events: none;
+            transform: rotate(15deg);
+        }
+
+        /* 主容器 - 魔法糖果风格 */
+        .timer-container {
+            background: rgba(255, 245, 250, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 80px;
+            padding: 30px 40px 45px 40px;
+            box-shadow: 0 25px 45px rgba(255, 105, 180, 0.3), inset 0 1px 4px rgba(255, 255, 200, 0.9), 0 0 0 5px #ffe0f0, 0 0 0 12px #ffb7c5;
+            border: 2px solid #fff5e6;
+            transition: all 0.2s ease;
+            max-width: 550px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* 可爱独角兽角装饰 */
+        .timer-container::before {
+            content: "🦄";
+            font-size: 48px;
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            filter: drop-shadow(0 8px 12px rgba(255, 128, 192, 0.5));
+            background: #ffeef8;
+            border-radius: 100px;
+            padding: 0 15px;
+            text-shadow: 0 0 5px #ff99cc;
+        }
+
+        /* 数字显示区 - 彩虹玻璃效果 */
+        .time-display {
+            background: linear-gradient(135deg, #fff0f7, #ffe4f0);
+            padding: 25px 35px;
+            border-radius: 70px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: inset 0 2px 8px rgba(255, 128, 171, 0.3), 0 12px 24px rgba(255, 105, 180, 0.2);
+            border: 2px solid #ffc0e0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 彩虹条纹光效 */
+        .time-display::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(255,180,200,0) 0%,
+                rgba(255,220,150,0.4) 25%,
+                rgba(180,255,200,0.3) 50%,
+                rgba(150,200,255,0.4) 75%,
+                rgba(255,180,200,0) 100%);
+            pointer-events: none;
+            animation: rainbowShine 8s infinite linear;
+        }
+        
+        @keyframes rainbowShine {
+            0% { transform: translateX(0%);}
+            100% { transform: translateX(100%);}
+        }
+
+        #timer {
+            font-size: 4.8rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', monospace;
+            background: linear-gradient(135deg, #ff66b5, #ffaa44, #77ddff, #c084fc, #ff66b5);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 8px rgba(255, 200, 220, 0.6);
+            animation: gradientFlow 6s ease infinite;
+        }
+        
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* 兼容不支持渐变文字的情况 */
+        @supports not (background-clip: text) {
+            #timer { 
+                color: #ff77aa; 
+                text-shadow: 0 0 8px #ffc0cb;
+                background: none;
+            }
+        }
+
+        /* 按钮区 甜点色系 */
+        .controls {
+            display: flex;
+            gap: 18px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 26px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 60px;
+            color: #5e2a3e;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.2s;
+            background: #ffe7f0;
+            box-shadow: 0 5px 0 #d9a6b9;
+            letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #d9a6b9;
+        }
+
+        .btn-primary {
+            background: #ffb7da;
+            color: #751d4b;
+            box-shadow: 0 5px 0 #d96c9e;
+        }
+
+        .btn-primary:hover {
+            background: #ffcae5;
+        }
+
+        .btn-warning {
+            background: #ffe0a3;
+            color: #aa6f20;
+            box-shadow: 0 5px 0 #e7b869;
+        }
+
+        .btn-warning:hover {
+            background: #ffecb3;
+        }
+
+        .btn-info {
+            background: #b5e4ff;
+            color: #1f6390;
+            box-shadow: 0 5px 0 #80bbdd;
+        }
+
+        .btn-info:hover {
+            background: #cceeff;
+        }
+
+        /* 记录面板 - 云朵日记本 */
+        .lap-panel {
+            background: rgba(255, 250, 240, 0.9);
+            border-radius: 48px;
+            padding: 15px 20px;
+            margin-top: 20px;
+            backdrop-filter: blur(4px);
+            border: 2px solid #ffd9e6;
+            box-shadow: 0 8px 18px rgba(255, 140, 170, 0.2);
+        }
+
+        .lap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0 12px 12px 12px;
+            border-bottom: 2px dotted #ffb7ce;
+            color: #c4527a;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .lap-list {
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 6px;
+            margin-top: 12px;
+            scrollbar-width: thin;
+        }
+
+        .lap-list::-webkit-scrollbar {
+            width: 6px;
+            background: #ffdfe8;
+            border-radius: 20px;
+        }
+
+        .lap-list::-webkit-scrollbar-thumb {
+            background: #ff92bb;
+            border-radius: 20px;
+        }
+
+        .lap-item {
+            background: rgba(255, 235, 245, 0.8);
+            margin: 10px 0;
+            padding: 8px 18px;
+            border-radius: 50px;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Comic Neue', monospace;
+            font-size: 1rem;
+            color: #a13e63;
+            border-left: 6px solid #ff99cc;
+            transition: 0.1s;
+            backdrop-filter: blur(2px);
+        }
+        
+        .lap-item:hover {
+            background: #ffeef5;
+            transform: scale(0.98);
+        }
+
+        .lap-num {
+            font-weight: bold;
+            background: #ffd0e1;
+            padding: 2px 14px;
+            border-radius: 40px;
+            color: #b13b64;
+        }
+
+        .lap-time {
+            letter-spacing: 1px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .empty-lap {
+            text-align: center;
+            color: #dd99aa;
+            padding: 25px;
+            font-style: italic;
+            background: #fff0f5;
+            border-radius: 44px;
+            font-size: 0.9rem;
+        }
+
+        .state-badge {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            background: #ffecf0;
+            display: inline-block;
+            width: auto;
+            padding: 7px 22px;
+            border-radius: 50px;
+            color: #ba5f85;
+            letter-spacing: 1px;
+            font-weight: bold;
+            box-shadow: inset 0 0 2px #ffeef4, 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .footer-hint {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 0.75rem;
+            color: #bc7a9a;
+            background: #fff5f9cc;
+            border-radius: 40px;
+            padding: 8px 16px;
+            border: 1px solid #ffcfdf;
+        }
+        
+        /* 可爱小马剪影装饰 */
+        .footer-hint::before {
+            content: "💖🌈";
+            margin-right: 6px;
+            font-size: 1rem;
+        }
+        
+        .footer-hint::after {
+            content: "🦄☁️";
+            margin-left: 6px;
+            font-size: 1rem;
+        }
+        
+        kbd {
+            background: #ffc0d6;
+            border-radius: 30px;
+            padding: 2px 10px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #9b3e62;
+            box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(0,0,0,0.1);
+            margin: 0 4px;
+        }
+
+        @media (max-width: 550px) {
+            .timer-container {
+                padding: 20px 20px 30px 20px;
+            }
+            #timer {
+                font-size: 2.4rem;
+                letter-spacing: 2px;
+            }
+            .btn {
+                padding: 8px 18px;
+                font-size: 0.85rem;
+            }
+            .time-display {
+                padding: 18px 12px;
+            }
+            .lap-header {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* 漂浮爱心动画 */
+        @keyframes floatHeart {
+            0% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            100% { transform: translateY(-70px) rotate(15deg); opacity: 0; }
+        }
+        
+        .floating-emoji {
+            position: fixed;
+            pointer-events: none;
+            font-size: 28px;
+            z-index: 999;
+            animation: floatHeart 1.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+
+<div class="timer-container">
+    <div class="time-display">
+        <div id="timer">00:00:00.00</div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-primary" id="startPauseBtn">🌟 开始 / 空格 🎀</button>
+        <button class="btn btn-warning" id="resetBtn">🔄 魔法重置 ✨</button>
+        <button class="btn btn-info" id="lapBtn">📝 记录圈点 🦄</button>
+    </div>
+
+    <div class="lap-panel">
+        <div class="lap-header">
+            <span>🌈 小马宝莉 · 友谊时光册 📖</span>
+            <button id="clearLapsBtn" style="background: #ffe0ea; border: none; border-radius: 40px; padding: 4px 12px; color: #b45178; cursor: pointer; font-size: 0.75rem; font-weight: bold;">🧹 清空记录</button>
+        </div>
+        <div class="lap-list" id="lapListContainer">
+            <div class="empty-lap">✨ 没有记录呢~ 按下「记录圈点」或按 R 键，收藏魔法时刻 ✨</div>
+        </div>
+    </div>
+    <div class="footer-hint">
+        🦋 快捷键: <kbd>空格</kbd> 开始/暂停 · <kbd>R</kbd> 记录当下 · <kbd>Esc</kbd> 重置时光
+    </div>
+    <div class="state-badge" id="stateBadge">🌸 暂停中 · 按空格开始魔法旅程 🌸</div>
+</div>
+
+<script>
+    (function() {
+        // ---------- DOM 元素 ----------
+        const timerEl = document.getElementById('timer');
+        const startPauseBtn = document.getElementById('startPauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const lapBtn = document.getElementById('lapBtn');
+        const clearLapsBtn = document.getElementById('clearLapsBtn');
+        const lapListContainer = document.getElementById('lapListContainer');
+        const stateBadge = document.getElementById('stateBadge');
+
+        // ---------- 计时核心变量 ----------
+        let startTime = 0;          
+        let accumulatedTime = 0;    
+        let isRunning = false;       
+        let animationId = null;      
+        let currentRawMs = 0;       
+        
+        // 记录列表
+        let lapEntries = [];
+
+        // 辅助函数: 魔法时间格式化 (带小时支持，显示可爱风格)
+        function formatTimeFromMs(totalMs) {
+            if (totalMs < 0) totalMs = 0;
+            const totalSeconds = Math.floor(totalMs / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            const milliseconds = totalMs % 1000;
+            
+            if (hours > 0) {
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${Math.floor(milliseconds / 10).toString().padStart(2, '0')}`;
+            } else {
+                return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${Math.floor(milliseconds / 10).toString().padStart(2, '0')}`;
+            }
+        }
+
+        function updateDisplay() {
+            timerEl.textContent = formatTimeFromMs(currentRawMs);
+        }
+
+        function computeCurrentRawMs() {
+            if (isRunning) {
+                const now = Date.now();
+                return accumulatedTime + (now - startTime);
+            } else {
+                return accumulatedTime;
+            }
+        }
+
+        function syncAndDisplay() {
+            currentRawMs = computeCurrentRawMs();
+            updateDisplay();
+        }
+
+        function updateTimerLoop() {
+            if (isRunning) {
+                currentRawMs = accumulatedTime + (Date.now() - startTime);
+                updateDisplay();
+                animationId = requestAnimationFrame(updateTimerLoop);
+            } else {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                syncAndDisplay();
+            }
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            startTime = Date.now();
+            if (animationId) cancelAnimationFrame(animationId);
+            animationId = requestAnimationFrame(updateTimerLoop);
+            updateUiState();
+            addFloatingEmoji('🎀');
+        }
+
+        function pauseTimer() {
+            if (!isRunning) return;
+            const now = Date.now();
+            accumulatedTime = accumulatedTime + (now - startTime);
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            currentRawMs = accumulatedTime;
+            updateDisplay();
+            updateUiState();
+            addFloatingEmoji('💖');
+        }
+
+        function resetTimer() {
+            const wasRunning = isRunning;
+            if (wasRunning) {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                isRunning = false;
+            }
+            accumulatedTime = 0;
+            startTime = 0;
+            currentRawMs = 0;
+            updateDisplay();
+            // 重置时询问风格: 清空记录符合魔法全新开始
+            if (lapEntries.length > 0) {
+                lapEntries = [];
+                renderLapList();
+            }
+            updateUiState();
+            if (animationId) animationId = null;
+            addFloatingEmoji('✨🦄');
+        }
+
+        function recordLap() {
+            let preciseMs = computeCurrentRawMs();
+            const formatted = formatTimeFromMs(preciseMs);
+            lapEntries.push({
+                rawMs: preciseMs,
+                formattedTime: formatted,
+                id: Date.now() + Math.random()
+            });
+            renderLapList();
+            addFloatingEmoji('📖🦄');
+        }
+
+        function renderLapList() {
+            if (!lapListContainer) return;
+            if (lapEntries.length === 0) {
+                lapListContainer.innerHTML = `<div class="empty-lap">✨ 友谊时光册还空空的~ 按「记录圈点」或按 R 键，留下魔法时刻 ✨</div>`;
+                return;
+            }
+            const fragment = document.createDocumentFragment();
+            lapEntries.forEach((entry, idx) => {
+                const div = document.createElement('div');
+                div.className = 'lap-item';
+                div.innerHTML = `
+                    <span class="lap-num">🌈 #${idx + 1}</span>
+                    <span class="lap-time">⏱️ ${entry.formattedTime}  🦄</span>
+                `;
+                fragment.appendChild(div);
+            });
+            lapListContainer.innerHTML = '';
+            lapListContainer.appendChild(fragment);
+            lapListContainer.scrollTop = lapListContainer.scrollHeight;
+        }
+
+        function clearLaps() {
+            if (lapEntries.length > 0) {
+                lapEntries = [];
+                renderLapList();
+                addFloatingEmoji('🧹🌸');
+            } else {
+                // 小小的可爱提示
+                const emptyDiv = document.querySelector('.empty-lap');
+                if (emptyDiv) emptyDiv.style.transform = "scale(0.99)";
+                setTimeout(() => { if(emptyDiv) emptyDiv.style.transform = ""; }, 200);
+            }
+        }
+
+        function updateUiState() {
+            if (isRunning) {
+                startPauseBtn.innerHTML = '⏸️ 暂停 / 空格 🧸';
+                stateBadge.innerHTML = '🌈 计时小马奔跑中... 按空格暂停 🌈';
+                stateBadge.style.background = "#ffe4f0";
+            } else {
+                startPauseBtn.innerHTML = '▶ 开始 / 空格 🌟';
+                stateBadge.innerHTML = '🌸 小马歇歇脚 · 按空格开始魔法旅程 🌸';
+                stateBadge.style.background = "#ffecf0";
+            }
+        }
+
+        function toggleStartPause() {
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        // 华丽飘浮小马元素 (爱心彩星)
+        function addFloatingEmoji(emoji) {
+            const floatDiv = document.createElement('div');
+            floatDiv.className = 'floating-emoji';
+            floatDiv.textContent = emoji || '🦄';
+            const randomX = Math.random() * window.innerWidth * 0.8 + window.innerWidth * 0.1;
+            floatDiv.style.left = randomX + 'px';
+            floatDiv.style.bottom = '20px';
+            floatDiv.style.position = 'fixed';
+            floatDiv.style.fontSize = (Math.random() * 20 + 24) + 'px';
+            floatDiv.style.filter = 'drop-shadow(0 0 4px #ffb7c5)';
+            document.body.appendChild(floatDiv);
+            setTimeout(() => {
+                floatDiv.remove();
+            }, 1500);
+        }
+
+        // ---------- 键盘控制 (空格 R ESC) ----------
+        function handleKeydown(event) {
+            if (event.code === 'Space') {
+                event.preventDefault();
+                toggleStartPause();
+            }
+            else if (event.code === 'KeyR') {
+                event.preventDefault();
+                recordLap();
+            }
+            else if (event.code === 'Escape') {
+                event.preventDefault();
+                resetTimer();
+            }
+        }
+
+        window.addEventListener('keydown', handleKeydown);
+        
+        // 绑定按钮事件
+        startPauseBtn.addEventListener('click', toggleStartPause);
+        resetBtn.addEventListener('click', resetTimer);
+        lapBtn.addEventListener('click', recordLap);
+        clearLapsBtn.addEventListener('click', clearLaps);
+        
+        // 初始渲染
+        currentRawMs = 0;
+        updateDisplay();
+        renderLapList();
+        updateUiState();
+        
+        window.addEventListener('beforeunload', () => {
+            if (animationId) cancelAnimationFrame(animationId);
+        });
+        
+        if (animationId) cancelAnimationFrame(animationId);
+        animationId = null;
+        
+        // 额外装饰小马宝莉彩蛋: 点击彩虹偶尔放彩纸
+        const container = document.querySelector('.timer-container');
+        container.addEventListener('click', (e) => {
+            if (Math.random() > 0.85) {
+                addFloatingEmoji('🌈✨');
+            }
+        });
+        
+        // 小马宝莉风格欢迎语（控制台）
+        console.log("%c✨ 欢迎来到小马宝莉魔法计时器！空格奔跑，R键记录友谊时光 ✨", "color: #ff66b5; font-size: 16px; font-weight: bold;");
+    })();
+</script>
+</body>
+</html>
